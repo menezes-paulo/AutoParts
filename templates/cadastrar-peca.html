@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}
+Cadastrar Peça - AutoParts
+{% endblock %}
+
+{% block content %}
+
+<h1>Cadastrar Peça</h1>
+
+<form class="card" method="POST" action="/cadastrar-peca">
+
+<div>
+    <label for="titulo">Título</label>
+
+    <input
+        id="titulo"
+        name="titulo"
+        placeholder="Ex: Filtro de Óleo Motor"
+        required
+    >
+</div>
+
+
+<div>
+    <label for="codigo_oem">Código Original</label>
+
+    <input
+        id="codigo_oem"
+        name="codigo_oem"
+        placeholder="Ex: 15400RTA003"
+        required
+    >
+</div>
+
+
+<div>
+    <label for="marca">Marca</label>
+
+    <input
+        id="marca"
+        name="marca"
+        placeholder="Ex: Honda Genuína"
+        required
+    >
+</div>
+
+
+<div>
+    <label for="preco">Preço</label>
+
+    <input
+        id="preco"
+        name="preco"
+        type="number"
+        step="0.01"
+        placeholder="Ex: 70.00"
+        required
+    >
+</div>
+
+
+<h2>Aplicações</h2>
+
+<div>
+
+    <label for="modelo">
+        Modelo
+    </label>
+
+    <select id="modelo">
+
+        <option value="">
+            Selecione um modelo
+        </option>
+
+        {% for modelo in modelos %}
+
+            <option value="{{ modelo.modelo }}">
+                {{ modelo.modelo }}
+            </option>
+
+        {% endfor %}
+
+    </select>
+    <select id="ano">
+    <option value="">
+        Selecione um ano
+    </option>
+</select>
+<select id="versao">
+    <option value="">
+        Selecione uma versao
+    </option>
+</select>
+<select id="motorizacao">
+    <option value="">
+        Selecione a motorização
+    </option>
+</select>
+
+</div>
+
+
+<button type="submit">
+    Cadastrar Peça
+</button>
+
+</form>
+<script>
+    const modelo = document.getElementById("modelo");
+    const ano = document.getElementById("ano");
+    const versao = document.getElementById("versao");
+    const motorizacao = document.getElementById("motorizacao");
+    modelo.addEventListener("change", function() {
+        const modeloEscolhido = modelo.value;
+        ano.innerHTML = '<option value="">Selecione um ano</option>';
+        versao.innerHTML = '<option value="">Selecione uma versão</option>';
+        motorizacao.innerHTML = '<option value="">Selecione a motorização</option>';
+        fetch(`/cadastrar-peca/anos/${modeloEscolhido}`)
+            .then(function(resposta) {
+                return resposta.json();
+            })
+            .then(function(anos) {
+                anos.forEach(function(item) {
+                    const opcao = document.createElement("option");
+                    opcao.value = item.ano;
+                    opcao.textContent = item.ano;
+                    ano.appendChild(opcao);
+                });
+            });
+    });
+    ano.addEventListener("change", function() {
+        const modeloEscolhido = modelo.value;
+        const anoEscolhido = ano.value;
+        versao.innerHTML = '<option value="">Selecione uma versão</option>';
+        motorizacao.innerHTML = '<option value="">Selecione a motorização</option>';
+        fetch(`/cadastrar-peca/veiculos/${modeloEscolhido}/${anoEscolhido}`)
+            .then(function(resposta) {
+                return resposta.json();
+            })
+            .then(function(veiculos) {
+                veiculos.forEach(function(item) {
+                    const opcao = document.createElement("option");
+                    opcao.value = item.id;
+                    opcao.textContent = item.versao;
+                    opcao.dataset.motorizacao = item.motorizacao;
+                    versao.appendChild(opcao);
+                });
+            });
+    });
+    versao.addEventListener("change", function() {
+        const opcaoSelecionada = versao.options[versao.selectedIndex];
+        const motor = opcaoSelecionada.dataset.motorizacao;
+        motorizacao.innerHTML = `<option value="${motor}">${motor}</option>`;
+    });
+</script>
+
+{% endblock %}

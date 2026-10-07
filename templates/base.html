@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{% block title %}AutoParts{% endblock %}</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <aside class="sidebar">
+
+        <div class="logo">
+            <h2>AUTOPARTS</h2>
+            <span>SYSTEM</span>
+        </div>
+
+        <nav>
+            <a href="/">Painel</a>
+            <a href="/cadastrar-veiculo">Veículos</a>
+            <a href="/cadastrar-peca">Peças</a>
+            <a href="#">Consulta</a>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <a href="#">Sair</a>
+        </div>
+
+    </aside>
+
+    <main class="content">
+
+        {% block content %}
+        {% endblock %}
+
+    </main>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+</body>
+</html>

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}
+Cadastro - AutoParts
+{% endblock %}
+
+{% block content %}
+
+<h1>Criar Administrador</h1>
+
+<form class="card" method="POST" action="/cadastro">
+
+    <div>
+        <label for="nome">Nome</label>
+        <input
+            id="nome"
+            name="nome"
+            type="text"
+            required
+        >
+    </div>
+
+    <div>
+        <label for="usuario">Usuário</label>
+        <input
+            id="usuario"
+            name="usuario"
+            type="text"
+            required
+        >
+    </div>
+
+<div>
+    <label for="senha">Senha</label>
+
+    <input
+        id="senha"
+        name="senha"
+        type="password"
+        required
+    >
+
+    <label class="mostrar-senha">
+        <input type="checkbox" id="mostrar-senha">
+        <span></span>
+        Mostrar senha
+    </label>
+</div>
+
+    <button type="submit">Criar Administrador</button>
+
+</form>
+
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}
+Cadastrar Veículo - AutoParts
+{% endblock %}
+
+{% block content %}
+
+<h1>Cadastrar Veículo</h1>
+
+<form class="card" method="POST" action="/cadastrar-veiculo">
+
+    <div>
+        <label for="modelo">Modelo</label>
+        <input
+            id="modelo"
+            name="modelo"
+            placeholder="Ex: Civic"
+            required
+        >
+    </div>
+
+    <div>
+        <label for="ano">Ano</label>
+        <input
+            id="ano"
+            name="ano"
+            type="number"
+            placeholder="Ex: 2026"
+            required
+        >
+    </div>
+
+    <div>
+        <label for="versao">Versão</label>
+        <input
+            id="versao"
+            name="versao"
+            placeholder="Ex: Touring, EXL, EX"
+            required
+        >
+    </div>
+
+    <div>
+        <label for="motorizacao">Motorização</label>
+        <input
+            id="motorizacao"
+            name="motorizacao"
+            placeholder="Ex: 1.5, 2.0, 1.5 Turbo"
+            required
+        >
+    </div>
+
+    <button type="submit">Cadastrar Veículo</button>
+
+</form>
+
+{% endblock %}

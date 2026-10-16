@@ -136,7 +136,8 @@ label {
     font-weight: 600;
 }
 
-input {
+input,
+select {
     width: 100%;
 
     background-color: #1a1a1a;
@@ -152,7 +153,8 @@ input {
     transition: 0.2s;
 }
 
-input:focus {
+input:focus,
+select:focus {
     border-color: #e50914;
 }
 
@@ -272,3 +274,58 @@ input[type="checkbox"] {
     font-weight: bold;
 }
 
+
+.titulo-aplicacoes {
+    margin-bottom: 18px;
+    font-size: 20px;
+}
+
+.campos-aplicacoes {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.campos-aplicacoes .campo-aplicacao {
+    margin-bottom: 0;
+}
+
+.campo-aplicacao label {
+    margin-bottom: 8px;
+}
+
+.campo-aplicacao select {
+    cursor: pointer;
+}
+
+.titulo-resultado {
+    margin-top: 35px;
+    margin-bottom: 10px;
+}
+
+.veiculo-selecionado {
+    margin-bottom: 25px;
+    color: #aaa;
+}
+
+.lista-pecas {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.peca-resultado {
+    background-color: #141414;
+    border: 1px solid #333;
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.peca-resultado h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+.peca-resultado p {
+    margin: 8px 0;
+}

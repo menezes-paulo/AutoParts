@@ -1,0 +1,24 @@
+
+{% extends "base.html" %}
+
+{% block title %}
+Cadastrar Motor - AutoParts
+{% endblock %}
+
+{% block content %}
+<h1>Cadastrar Motor</h1>
+
+<form class="card" method="POST" action="/cadastrar-motor">
+    <div>
+        <label for="nome">Nome do motor</label>
+        <input id="nome" name="nome" placeholder="Ex: 1.5 Turbo" required>
+    </div>
+
+    <div>
+        <label for="codigo">Código</label>
+        <input id="codigo" name="codigo" placeholder="Ex: L15B" required>
+    </div>
+
+    <button type="submit">Cadastrar Motor</button>
+</form>
+{% endblock %}

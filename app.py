@@ -9,11 +9,11 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY")
 banco = mysql.connector.connect(
-    host="DB_HOST",
-    user="DB_USER",
-    password="DB_PASSWORD",
-    database="DB_NAME"
-)
+    host="localhost",
+    user="root",
+    password="",
+    database="autoparts"
+)   
 
 
 def criar_usuario(nome, usuario, senha):
@@ -73,23 +73,55 @@ def logout():
         session.pop("usuario", None)
     return redirect("/login")
 
-def inserir_veiculo(modelo, ano, versao, motorizacao):
-    cursor = banco.cursor(dictionary=True)
-    sql = """INSERT INTO veiculos (modelo, ano, versao, motorizacao) VALUES (%s, %s, %s, %s)"""
-    valores = (modelo, ano, versao, motorizacao)
+
+def inserir_veiculo(modelo, ano, versao, id_motor):
+    cursor = banco.cursor()
+    sql = """INSERT INTO veiculos (modelo, ano, versao, id_motor) VALUES (%s, %s, %s, %s)"""
+    valores = (modelo, ano, versao, id_motor)
     cursor.execute(sql, valores)
     banco.commit()
+    cursor.close()
+
+
+@app.route("/cadastrar-motor", methods=["GET", "POST"])
+def cadastrar_motor():
+    if "usuario" not in session:
+        return redirect("/login")
+    if request.method == "POST":
+        nome = request.form["nome"].strip()
+        codigo = request.form.get("codigo", "").strip()
+        if not codigo:
+            return "Informe o código do motor."
+        if not nome:
+            return "Informe o nome do motor."
+        cursor = banco.cursor()
+        try:
+            sql = """INSERT INTO motores (nome, codigo) VALUES (%s, %s)"""
+            cursor.execute(sql, (nome, codigo))
+            banco.commit()
+        except mysql.connector.IntegrityError:
+            banco.rollback()
+            return "Esse código de motor já está cadastrado."
+        finally:
+            cursor.close()
+        return redirect("/cadastrar-motor")
+    return render_template("cadastrar-motor.html")
 
 
 @app.route("/")
 def inicio():
     return "AutoParts funcionando"
 
+
 @app.route("/cadastrar-veiculo", methods=["GET"])
 def pagina_cadastrar_veiculo():
     if "usuario" not in session:
         return redirect("/login")
-    return render_template("cadastrar-veiculo.html")
+    cursor = banco.cursor(dictionary=True)
+    cursor.execute("SELECT id, nome, codigo FROM motores ORDER BY nome")
+    motores = cursor.fetchall()
+    cursor.close()
+    return render_template("cadastrar-veiculo.html", motores=motores)
 
 
 
@@ -100,8 +132,8 @@ def cadastrar_veiculo():
     modelo = request.form["modelo"]
     ano = request.form["ano"]
     versao = request.form["versao"]
-    motorizacao = request.form["motorizacao"]
-    inserir_veiculo(modelo, ano, versao, motorizacao)
+    id_motor = request.form["id_motor"]
+    inserir_veiculo(modelo, ano, versao, id_motor)
     return redirect("/cadastrar-veiculo")
 
 
@@ -113,6 +145,7 @@ def existe_usuario():
     return resultado[0]
 
 
+
 @app.route("/cadastrar-peca", methods=["GET", "POST"])
 def cadastrar_peca():
     if "usuario" not in session:
@@ -122,15 +155,18 @@ def cadastrar_peca():
         codigo_oem = request.form["codigo_oem"]
         marca = request.form["marca"]
         preco = request.form["preco"]
-        veiculos = request.form.getlist("veiculos")
-        inserir_peca(titulo, codigo_oem, marca, preco,
-            veiculos)
+        motores = request.form.getlist("motores")
+        inserir_peca(titulo, codigo_oem, marca, preco, motores)
         return redirect("/cadastrar-peca")
     cursor = banco.cursor(dictionary=True)
-    sql = """SELECT DISTINCT modelo FROM veiculos ORDER BY modelo"""
+    sql = """SELECT id, nome, codigo FROM motores ORDER BY nome"""
     cursor.execute(sql)
-    modelos = cursor.fetchall()
-    return render_template("cadastrar-peca.html", modelos=modelos)
+    motores = cursor.fetchall()
+    cursor.close()
+    return render_template("cadastrar-peca.html", motores=motores)
+
+
+
 
 @app.route("/cadastrar-peca/anos/<modelo>")
 def buscar_anos(modelo):
@@ -159,19 +195,67 @@ def buscar_veiculos(modelo, ano):
 
 
 
-def inserir_peca(titulo, codigo_oem, marca, preco, veiculos):
+def inserir_peca(titulo, codigo_oem, marca, preco, motores):
     cursor = banco.cursor()
     sql = """INSERT INTO pecas (titulo, codigo_oem, marca, preco) VALUES (%s, %s, %s, %s)"""
     valores = (titulo, codigo_oem, marca, preco)
     cursor.execute(sql, valores)
     id_peca = cursor.lastrowid
-    for id_veiculo in veiculos:
-        sql_aplicacao = """INSERT INTO aplicacoes (id_peca, id_veiculo) VALUES (%s, %s)"""
-        valores_aplicacao = (id_peca, id_veiculo)
+    for id_motor in motores:
+        sql_aplicacao = """INSERT INTO aplicacoes (id_peca, id_motor) VALUES (%s, %s)"""
+        valores_aplicacao = (id_peca, id_motor)
         cursor.execute(sql_aplicacao, valores_aplicacao)
     banco.commit()
+    cursor.close()
+
+@app.route("/consultar-pecas", methods=["GET", "POST"])
+def consultar_pecas():
+    if "usuario" not in session:
+        return redirect("/login")
+    cursor = banco.cursor(dictionary=True)
+    cursor.execute("""SELECT DISTINCT modelo FROM veiculos ORDER BY modelo""")
+    modelos = cursor.fetchall()
+    pecas = []
+    veiculo_selecionado = None
+    if request.method == "POST":
+        modelo = request.form["modelo"]
+        ano = request.form["ano"]
+        versao = request.form["versao"]
+        sql = """SELECT p.titulo, p.codigo_oem, p.marca, p.preco
+            FROM veiculos v JOIN aplicacoes a ON a.id_motor = v.id_motor JOIN pecas p ON p.id = a.id_peca WHERE v.modelo = %s AND v.ano = %s AND v.versao = %s ORDER BY p.titulo"""
+        cursor.execute(sql, (modelo, ano, versao))
+        pecas = cursor.fetchall()
+        veiculo_selecionado = {
+            "modelo": modelo,
+            "ano": ano,
+            "versao": versao
+        }
+    cursor.close()
+    return render_template(
+        "consultar-pecas.html",
+        modelos=modelos,
+        pecas=pecas,
+        veiculo_selecionado=veiculo_selecionado
+    )
+
+@app.route("/consultar-pecas/anos/<modelo>")
+def consultar_anos(modelo):
+    cursor = banco.cursor(dictionary=True)
+    sql = """SELECT DISTINCT ano FROM veiculos WHERE modelo = %s ORDER BY ano"""
+    cursor.execute(sql, (modelo,))
+    anos = cursor.fetchall()
+    cursor.close()
+    return anos
 
 
+@app.route("/consultar-pecas/versoes/<modelo>/<int:ano>")
+def consultar_versoes(modelo, ano):
+    cursor = banco.cursor(dictionary=True)
+    sql = """SELECT id, versao FROM veiculos WHERE modelo = %s AND ano = %s ORDER BY versao"""
+    cursor.execute(sql, (modelo, ano))
+    versoes = cursor.fetchall()
+    cursor.close()
+    return versoes
 
 if __name__ == "__main__":
     app.run(debug=True)

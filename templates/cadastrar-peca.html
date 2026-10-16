@@ -60,100 +60,31 @@ Cadastrar Peça - AutoParts
 </div>
 
 
-<h2>Aplicações</h2>
+<h2 class="titulo-aplicacoes">Selecione os motores compatíveis</h2>
 
-<div>
+<div class="campos-aplicacao">
+    <div class="campo-aplicacao">
+        <label for="motores">Lista de motores</label>
 
-    <label for="modelo">
-        Modelo
-    </label>
+        <select id="motores" name="motores" multiple required>
+            {% for motor in motores %}
+                <option value="{{ motor.id }}">
+                    {{ motor.nome }} - {{ motor.codigo }}
+                </option>
+            {% endfor %}
+        </select>
 
-    <select id="modelo">
-
-        <option value="">
-            Selecione um modelo
-        </option>
-
-        {% for modelo in modelos %}
-
-            <option value="{{ modelo.modelo }}">
-                {{ modelo.modelo }}
-            </option>
-
-        {% endfor %}
-
-    </select>
-    <select id="ano">
-    <option value="">
-        Selecione um ano
-    </option>
-</select>
-<select id="versao">
-    <option value="">
-        Selecione uma versao
-    </option>
-</select>
-<select id="motorizacao">
-    <option value="">
-        Selecione a motorização
-    </option>
-</select>
-
+        <small class="ajuda-campo">
+            Para selecionar mais de um motor, segure Ctrl enquanto clica.
+        </small>
+    </div>
 </div>
-
 
 <button type="submit">
     Cadastrar Peça
 </button>
 
 </form>
-<script>
-    const modelo = document.getElementById("modelo");
-    const ano = document.getElementById("ano");
-    const versao = document.getElementById("versao");
-    const motorizacao = document.getElementById("motorizacao");
-    modelo.addEventListener("change", function() {
-        const modeloEscolhido = modelo.value;
-        ano.innerHTML = '<option value="">Selecione um ano</option>';
-        versao.innerHTML = '<option value="">Selecione uma versão</option>';
-        motorizacao.innerHTML = '<option value="">Selecione a motorização</option>';
-        fetch(`/cadastrar-peca/anos/${modeloEscolhido}`)
-            .then(function(resposta) {
-                return resposta.json();
-            })
-            .then(function(anos) {
-                anos.forEach(function(item) {
-                    const opcao = document.createElement("option");
-                    opcao.value = item.ano;
-                    opcao.textContent = item.ano;
-                    ano.appendChild(opcao);
-                });
-            });
-    });
-    ano.addEventListener("change", function() {
-        const modeloEscolhido = modelo.value;
-        const anoEscolhido = ano.value;
-        versao.innerHTML = '<option value="">Selecione uma versão</option>';
-        motorizacao.innerHTML = '<option value="">Selecione a motorização</option>';
-        fetch(`/cadastrar-peca/veiculos/${modeloEscolhido}/${anoEscolhido}`)
-            .then(function(resposta) {
-                return resposta.json();
-            })
-            .then(function(veiculos) {
-                veiculos.forEach(function(item) {
-                    const opcao = document.createElement("option");
-                    opcao.value = item.id;
-                    opcao.textContent = item.versao;
-                    opcao.dataset.motorizacao = item.motorizacao;
-                    versao.appendChild(opcao);
-                });
-            });
-    });
-    versao.addEventListener("change", function() {
-        const opcaoSelecionada = versao.options[versao.selectedIndex];
-        const motor = opcaoSelecionada.dataset.motorizacao;
-        motorizacao.innerHTML = `<option value="${motor}">${motor}</option>`;
-    });
-</script>
+
 
 {% endblock %}

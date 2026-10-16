@@ -41,15 +41,23 @@ Cadastrar Veículo - AutoParts
         >
     </div>
 
+
     <div>
-        <label for="motorizacao">Motorização</label>
-        <input
-            id="motorizacao"
-            name="motorizacao"
-            placeholder="Ex: 1.5, 2.0, 1.5 Turbo"
-            required
-        >
+    <label for="id_motor">Motor</label>
+
+    <select id="id_motor" name="id_motor" required>
+        <option value="">Selecione um motor</option>
+
+        {% for motor in motores %}
+            <option value="{{ motor.id }}">
+                {{ motor.nome }}{% if motor.codigo %} - {{ motor.codigo }}{% endif %}
+            </option>
+        {% endfor %}
+    </select>
     </div>
+
+
+    
 
     <button type="submit">Cadastrar Veículo</button>
 

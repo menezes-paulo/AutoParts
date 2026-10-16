@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}
+Consultar Peças - AutoParts
+{% endblock %}
+
+{% block content %}
+
+<h1>Consultar Peças</h1>
+
+<form class="card" method="POST" action="/consultar-pecas">
+
+    <div>
+        <label for="modelo">Modelo</label>
+        <select id="modelo" name="modelo" required>
+            <option value="">Selecione um modelo</option>
+
+            {% for modelo in modelos %}
+                <option value="{{ modelo.modelo }}">
+                    {{ modelo.modelo }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div>
+        <label for="ano">Ano</label>
+        <select id="ano" name="ano" required>
+            <option value="">Selecione um ano</option>
+        </select>
+    </div>
+
+    <div>
+        <label for="versao">Versão</label>
+        <select id="versao" name="versao" required>
+            <option value="">Selecione uma versão</option>
+        </select>
+    </div>
+
+    <button type="submit">Consultar Peças</button>
+
+</form>
+
+
+{% if veiculo_selecionado %}
+
+    <h2 class="titulo-resultado">Peças compatíveis</h2>
+
+    <p class="veiculo-selecionado">
+        {{ veiculo_selecionado.modelo }}
+        {{ veiculo_selecionado.ano }}
+        {{ veiculo_selecionado.versao }}
+    </p>
+
+    {% if pecas %}
+
+        <div class="lista-pecas">
+
+            {% for peca in pecas %}
+
+                <div class="peca-resultado">
+
+                    <h3>{{ peca.titulo }}</h3>
+
+                    <p>Código: {{ peca.codigo_oem }}</p>
+                    <p>Marca: {{ peca.marca }}</p>
+                    <p>Preço: R$ {{ "%.2f"|format(peca.preco) }}</p>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    {% else %}
+
+        <p>Nenhuma peça encontrada para este veículo.</p>
+
+    {% endif %}
+
+{% endif %}
+
+<script>
+
+    const modelo = document.getElementById("modelo");
+    const ano = document.getElementById("ano");
+    const versao = document.getElementById("versao");
+
+
+    modelo.addEventListener("change", function() {
+
+        const modeloEscolhido = modelo.value;
+
+        ano.innerHTML = '<option value="">Selecione um ano</option>';
+        versao.innerHTML = '<option value="">Selecione uma versão</option>';
+
+        if (!modeloEscolhido) {
+            return;
+        }
+
+        fetch(`/consultar-pecas/anos/${modeloEscolhido}`)
+            .then(function(resposta) {
+                return resposta.json();
+            })
+            .then(function(anos) {
+
+                anos.forEach(function(item) {
+
+                    const opcao = document.createElement("option");
+
+                    opcao.value = item.ano;
+                    opcao.textContent = item.ano;
+
+                    ano.appendChild(opcao);
+
+                });
+
+            });
+
+    });
+
+
+    ano.addEventListener("change", function() {
+
+        const modeloEscolhido = modelo.value;
+        const anoEscolhido = ano.value;
+
+        versao.innerHTML = '<option value="">Selecione uma versão</option>';
+
+        if (!modeloEscolhido || !anoEscolhido) {
+            return;
+        }
+
+        fetch(`/consultar-pecas/versoes/${modeloEscolhido}/${anoEscolhido}`)
+            .then(function(resposta) {
+                return resposta.json();
+            })
+            .then(function(versoes) {
+
+                versoes.forEach(function(item) {
+
+                    const opcao = document.createElement("option");
+
+                    opcao.value = item.versao;
+                    opcao.textContent = item.versao;
+
+                    versao.appendChild(opcao);
+
+                });
+
+            });
+
+    });
+
+</script>
+
+{% endblock %}
